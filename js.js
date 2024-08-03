@@ -8,11 +8,9 @@ const form__input__distance = document.querySelector('.form__input--distance');
 const workouts_btn = document.querySelector('.workouts-btn');
 const slider = document.querySelector('.slider');
 
-function show(){
-  slider.classList.toggle('hidden')
-}
 
-const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
+
+const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August','September', 'October', 'November', 'December']
 class Workout {
   date = new Date();
   id = (Date.now()+'').slice(-10)
@@ -23,8 +21,6 @@ class Workout {
   }
   _setDescription() {
     // prettier-ignore
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-
     this.description = `${this.type[0].toUpperCase()}${this.type.slice(1)} on ${
       months[this.date.getMonth()]
     } ${this.date.getDate()}`;
@@ -61,14 +57,13 @@ class Cycling extends Workout{
 
 
 
-
-
 class App{
   #map;
   #mapEvent;
   #workouts = [];
   constructor(){
     this._getPosition();
+    this._getLocalStorage()
     form.addEventListener('submit',this._newWorkout.bind(this))
     form__input__type.addEventListener('change',this._toggleElvationField)
   }
@@ -92,7 +87,10 @@ class App{
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       }).addTo(this.#map);
-            this.#map.on('click',this._showForm.bind(this))
+            this.#map.on('click',this._showForm.bind(this));
+            this.#workouts.forEach(work=>{
+            this._renderWorkoutMarker(work)
+          })
   }
   _showForm(mapE){
     this.#mapEvent = mapE;
@@ -133,12 +131,10 @@ class App{
         }
         // add new object to worjout array 
         this.#workouts.push(workout)
-        console.log(workout);
-        // clear inputs value 
-        
         this._hideForm();
         this._renderWorkoutMarker(workout);
         this._rederWorkOut(workout)
+        this._setLocalStorage()
         
   }
   _renderWorkoutMarker(workout){
@@ -202,10 +198,21 @@ class App{
 `;
   form.insertAdjacentHTML('afterend', html);
 
-}
+  }
+  _setLocalStorage(){
+    localStorage.setItem('workouts',JSON.stringify(this.#workouts))
+  }
+  _getLocalStorage(){
+    const data = JSON.parse(localStorage.getItem('workouts'));
+    this.#workouts = data
+    this.#workouts.forEach(work=>{
+      this._rederWorkOut(work);
+    })
+    
+  }
 
 }
 
 
-const app = new App()
+  const app = new App()
 
